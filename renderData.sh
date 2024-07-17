@@ -4,6 +4,7 @@ VIEWS_CAMERA_LOG=("CanonLog2" "CanonLog3" "V-Log V-Gamut" "S-Log2 - ITU-709" "S-
 VIEWS_LOG=("AgX Log" "DaVinci Intermidiate" "Filmlight T-Log - E-Gamut")
 VIEWS_SRGB=("None" "Standard" "AgX" "AgX Kraken" "ACES" "TCAMv2" "ARRI K1S1" "RED IPP2" "OpenDRT" "JzDT" "Khronos Neutral")
 VIEWS=( "${VIEWS_CAMERA_LOG[@]}" "${VIEWS_LOG[@]}" "${VIEWS_SRGB[@]}" )
+BLENDER=blender
 
 echo ${VIEWS[@]}
 
@@ -19,7 +20,7 @@ for PROJECT in "${PROJECTS[@]}"; do
         fi
         PROJECT_NAME=$(basename -- "$PROJECT")
         PROJECT_NAME="${PROJECT_NAME%.*}"
-        blender -b $PROJECT --python render.py -x 1 -o ./renders/$PROJECT_NAME/$VIEW/ -f 1 -- "$DISPLAY" "$VIEW"
+        $($BLENDER -b $PROJECT --python render.py -x 1 -o ./renders/$PROJECT_NAME/$VIEW/ -f 1 -- "$DISPLAY" "$VIEW")
         I=$((I+1))
     done
 done
