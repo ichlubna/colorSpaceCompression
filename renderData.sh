@@ -21,7 +21,7 @@ for PROJECT in "${PROJECTS[@]}"; do
         PROJECT_NAME=$(basename -- "$PROJECT")
         PROJECT_NAME="${PROJECT_NAME%.*}"
         VIEW_NAME=$(echo "$VIEW" | tr ' ' '_')
-        $BLENDER -b $PROJECT --python render.py -x 1 -o ./renders/$PROJECT_NAME/$VIEW_NAME/ -f 1 -- "$DISPLAY" "$VIEW"
+        $BLENDER -b $PROJECT --python render.py -x 1 -o ./renders/$PROJECT_NAME/$VIEW_NAME/ -a -- "$DISPLAY" "$VIEW"
         I=$((I+1))
     done
 done
