@@ -25,4 +25,4 @@ Each project was rendered in 3840x2160 resolution, 16-bit RGB PNG, 100 frames lo
 -1.2 -4 0.1 - 0.96 4 0.1
 -12.19 -4 0.15 - 5.64 -4 0.15
 -1.69 -4 0.22 - 1.14 -4 0.22
-
+-2.05 -3.8 0 - 2.25 -3.8 0
