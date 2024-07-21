@@ -1,4 +1,4 @@
-PROJECTS=$(ls projects/*.blend)
+PROJECTS=($(ls projects/*.blend))
 DISPLAYS=("Camera Log" "Log" "sRGB")
 VIEWS_CAMERA_LOG=("CanonLog2" "CanonLog3" "V-Log V-Gamut" "S-Log2 ITU-709" "S-Log3 S-Gamut3" "F-Log F-Gamut" "F-Log2 F-Gamut" "D-Log D-Gamut" "ProTune Log" "N-Log" "Apple Log" "BMDFilm Gen5") 
 VIEWS_LOG=("AgX Log" "DaVinci Intermidiate" "Filmlight T-Log - E-Gamut")

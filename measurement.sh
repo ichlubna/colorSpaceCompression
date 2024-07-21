@@ -29,9 +29,9 @@ losslessCompress ()
 
 COMPRESSED=./compressed
 mkdir -p $COMPRESSED
-PROJECTS=$(ls -d renders/*)
+PROJECTS=($(ls -d renders/*))
 for PROJECT in $PROJECTS; do
-    PROFILES=$(ls -d $PROJECT/*)
+    PROFILES=($(ls -d $PROJECT/*))
     COMPRESSED_PROJECT=$COMPRESSED/$PROJECT
     mkdir -p $COMPRESSED_PROJECT
     for PROFILE in $PROFILES; do
