@@ -20,7 +20,10 @@ imageNode.location = 0,0
 bpy.ops.image.open(filepath=imagesPath)
 imageNode.image = bpy.data.images.values[2]
 imageNode.image.colorspace_settings.name = profile
-imageNode.image.source = "SEQUENCE"
+if ".mp4" in raw_file_content:
+    imageNode.image.source = "MOVIE"
+else:
+    imageNode.image.source = "SEQUENCE"
 imageNode.frame_duration = sequenceLength
 
 compositeNode = tree.nodes.new('CompositorNodeComposite')   
@@ -36,4 +39,6 @@ bpy.context.scene.render.filepath = outputPath
 bpy.context.scene.render.image_settings.file_format = "PNG"
 bpy.context.scene.render.image_settings.color_depth = "16"
 bpy.context.scene.render.image_settings.color_mode = "RGB"
+bpy.context.scene.display_settings.display_device = "sRGB"
+bpy.context.scene.view_settings.view_transform = "None"
 bpy.ops.render.render(animation=True, write_still=True)
