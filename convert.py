@@ -1,4 +1,5 @@
 # The color profiles need to be made visible by uncommenting STUDIO-Comp-Grading group in PixelManager pack
+# Also remove S-Log2 ITU 709 Matrix from the inactive spaces list
 import bpy
 import sys
 
@@ -18,7 +19,7 @@ sequenceLength = 100
 imageNode = tree.nodes.new(type='CompositorNodeImage')
 imageNode.location = 0,0
 bpy.ops.image.open(filepath=imagesPath)
-imageNode.image = bpy.data.images.values[2]
+imageNode.image = bpy.data.images.values()[2]
 imageNode.image.colorspace_settings.name = profile
 if ".mp4" in raw_file_content:
     imageNode.image.source = "MOVIE"
@@ -30,7 +31,7 @@ compositeNode = tree.nodes.new('CompositorNodeComposite')
 compositeNode.location = 1000,0
 
 links = tree.links
-link = links.new(imageNode.outputs[0], compositeNode.inputs[0]
+link = links.new(imageNode.outputs[0], compositeNode.inputs[0])
 
 bpy.context.scene.frame_end = sequenceLength
 bpy.context.scene.render.resolution_y = 3840
