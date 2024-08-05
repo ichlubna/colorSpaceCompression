@@ -2,26 +2,31 @@
 # Also remove S-Log2 ITU 709 Matrix from the inactive spaces list
 import bpy
 import sys
+import os
 
 argv = sys.argv
 argv = argv[argv.index("--") + 1:]
 profile = argv[0]
 imagesPath = argv[1]
 outputPath = argv[2]
+framesCount = int(argv[3])
 
 bpy.context.scene.use_nodes = True
 tree = bpy.context.scene.node_tree
+bpy.context.scene.render.compositor_device = "GPU"
 
 for node in tree.nodes:
     tree.nodes.remove(node)
 
-sequenceLength = 100
+sequenceLength = framesCount
 imageNode = tree.nodes.new(type='CompositorNodeImage')
 imageNode.location = 0,0
-bpy.ops.image.open(filepath=imagesPath)
-imageNode.image = bpy.data.images.values()[2]
+#bpy.ops.image.open(filepath=imagesPath)
+bpy.data.images.load(imagesPath)
+image = bpy.data.images[os.path.basename(imagesPath)]
+imageNode.image = image
 imageNode.image.colorspace_settings.name = profile
-if ".mp4" in raw_file_content:
+if ".mp4" in imagesPath:
     imageNode.image.source = "MOVIE"
 else:
     imageNode.image.source = "SEQUENCE"
@@ -34,8 +39,8 @@ links = tree.links
 link = links.new(imageNode.outputs[0], compositeNode.inputs[0])
 
 bpy.context.scene.frame_end = sequenceLength
-bpy.context.scene.render.resolution_y = 3840
-bpy.context.scene.render.resolution_x = 2160
+bpy.context.scene.render.resolution_x = 3840
+bpy.context.scene.render.resolution_y = 2160
 bpy.context.scene.render.filepath = outputPath
 bpy.context.scene.render.image_settings.file_format = "PNG"
 bpy.context.scene.render.image_settings.color_depth = "16"

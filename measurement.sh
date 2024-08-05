@@ -12,7 +12,14 @@ TEMP=$(mktemp -d)
 
 RESULTS=./results.txt
 RESULTS_INVERSE=./resultsInverse.txt
-echo "project, profile, bit, codec, crf, psnr, ssim, vmaf, size" > $RESULTS
+FIRST=$(ls -AU renders | head -1)
+SECOND=$(ls -AU renders/$FIRST | head -1)
+FRAMES_COUNT=$(ls -1q renders/$FIRST/$SECOND/*  | wc -l)
+
+HEADER="project, profile, bit, codec, crf, psnr, ssim, vmaf, size"
+echo $HEADER > $RESULTS
+echo $HEADER > $RESULTS_INVERSE
+
 compareAndStore ()
 {
     INPUT=$1
@@ -23,48 +30,47 @@ compareAndStore ()
     SSIM=$(echo "$RESULT" | grep -oP '(?<=All:).*?(?= )')
     RESULT=$($FFMPEG -i $INPUT -i $REFERENCE -lavfi libvmaf -f null /dev/null 2>&1)
     VMAF=$(echo "$RESULT" | grep -oP '(?<=VMAF score: ).*')
-    echo $3, $4, $5, $6, $7, $PSNR, $SSIM, $VMAF, $8 > $9 
+    echo $3, $4, $5, $6, $7, $PSNR, $SSIM, $VMAF, $8 >> $9 
 }
 
 translateProfile ()
 {
-    return $1
     if [[ "$1" == "CanonLog2" ]]; then
-        return "CanonLog2 CinemaGamut D55"
+        echo "CanonLog2 CinemaGamut D55"
     elif [[ "$1" == "CanonLog3" ]]; then
-        return "CanonLog3 CinemaGamut D55"
+        echo "CanonLog3 CinemaGamut D55"
     elif [[ "$1" == "S-Log2 ITU-709" ]]; then
-        return "S-Log2 ITU 709 Matrix"
+        echo "S-Log2 ITU 709 Matrix"
     elif [[ "$1" == "BMDFilm Gen5" ]]; then
-        return "BMDFilm WideGamut Gen5 Log"
+        echo "BMDFilm WideGamut Gen5 Log"
     elif [[ "$1" == "DaVinci Intermidiate" ]]; then
-        return "DaVinci Intermidiate WideGamut Log"
+        echo "DaVinci Intermidiate WideGamut Log"
     elif [[ "$1" == "Filmlight T-Log - E-Gamut" ]]; then
-        return "T-Log - E-Gamut"
+        echo "T-Log - E-Gamut"
     elif [[ "$1" == "None" ]]; then
-        return "Non-Color"
+        echo "Non-Color"
     elif [[ "$1" == "Standard" ]]; then
-        return "sRGB"
+        echo "sRGB"
     elif [[ "$1" == "AgX" ]]; then
-        return "AgX Base sRGB"
+        echo "AgX Base sRGB"
     elif [[ "$1" == "AgX Kraken" ]]; then
-        return "AgX Base Kraken sRGB"
+        echo "AgX Base Kraken sRGB"
     elif [[ "$1" == "ACES" ]]; then
-        return "ACES sRGB"
+        echo "ACES sRGB"
     elif [[ "$1" == "TCAMv2" ]]; then
-        return "TCAMv2 sRGB"
+        echo "TCAMv2 sRGB"
     elif [[ "$1" == "ARRI K1S1" ]]; then
-        return "ARRI K1S1 sRGB"
+        echo "ARRI K1S1 sRGB"
     elif [[ "$1" == "RED IPP2" ]]; then
-        return "RED IPP2 sRGB"
+        echo "RED IPP2 sRGB"
     elif [[ "$1" == "OpenDRT" ]]; then
-        return "OpenDRT sRGB"
+        echo "OpenDRT sRGB"
     elif [[ "$1" == "JzDT" ]]; then
-        return "JzDT sRGB"
+        echo "JzDT sRGB"
     elif [[ "$1" == "Khronos Neutral" ]]; then
-        return "Khronos Neutral sRGB"
+        echo "Khronos Neutral sRGB"
     else
-        return $1
+        echo $1
     fi
 }
 
@@ -72,11 +78,11 @@ translateProfile ()
 compareAll ()
 {
     compareAndStore $1 $2 $3 $4 $5 $6 $7 $8 $9 
-    INVERTED_DIR=${10}/inverted_$7
+    INVERTED_DIR=${10}/inverted_$7/
     mkdir -p $INVERTED_DIR
     PROFILE_NAME=$(echo "$4" | tr '_' ' ')
     PROFILE_NAME=$(translateProfile $PROFILE_NAME)
-    $BLENDER -b --python convert.py -x 1 -- "$PROFILE_NAME" "$1" "$INVERTED_DIR"
+    $BLENDER -b --python convert.py -x 1 -- "$PROFILE_NAME" "$1" "$INVERTED_DIR" $FRAMES_COUNT
     compareAndStore $INVERTED_DIR/%04d.png ${11} $3 $4 $5 $6 $7 $8 $RESULTS_INVERSE
 }
 
@@ -105,6 +111,7 @@ for PROJECT in $PROJECTS; do
             mkdir -p $BIT_DIR
             REF_FILE=$BIT_DIR/$PROFILE_NAME"_REF.mp4"
             losslessCompress $PROFILE/%04d.png $REF_FILE $BIT
+
             CODEC=libx265
             CODEC_DIR=$BIT_DIR/$CODEC
             mkdir -p $CODEC_DIR
@@ -129,11 +136,10 @@ for PROJECT in $PROJECTS; do
             CODEC_DIR=$BIT_DIR/$CODEC
             mkdir -p $CODEC_DIR
             for CRF in 1 11 21 31 41 51 61; do
-                COMPRESSED_DIR=$CODEC_DIR/$PROFILE"_"$CRF
-                mkdir -p $COMPRESSED_DIR
-                $FFMPEG -y -i $PROFILE/%04d.png -c:v libaom-av1 -still-picture 1 -crf $CRF -pix_fmt gbrp"$BIT"le $COMPRESSED_DIR/%04d.avif
-                SIZE=$(du -bs $COMPRESSED_DIR | cut -d "     " -f1)
-                compareAll $COMPRESSED_DIR/%04d.avif $REF_FILE $PROJECT_NAME $PROFILE_NAME $BIT $CODEC $CRF $SIZE $RESULTS $CODEC_DIR $REFERENCE_NONE/$BIT.mp4    
+                COMPRESSED_FILE=$CODEC_DIR/$PROFILE_NAME"_"$CRF".mp4"
+                $FFMPEG -y -i $PROFILE/%04d.png -c:v libaom-av1 -still-picture 1 -crf $CRF -pix_fmt gbrp"$BIT"le $COMPRESSED_FILE
+                SIZE=$(stat --printf="%s" $COMPRESSED_FILE)
+                compareAll $COMPRESSED_FILE $REF_FILE $PROJECT_NAME $PROFILE_NAME $BIT $CODEC $CRF $SIZE $RESULTS $CODEC_DIR $REFERENCE_NONE/$BIT.mp4   
             done
  
             CODEC=vvc
@@ -142,10 +148,11 @@ for PROJECT in $PROJECTS; do
             for CRF in 1 10 19 28 37 46 55 63; do
                 COMPRESSED_FILE=$CODEC_DIR/$PROFILE_NAME"_"$CRF".bin"
                 $FFMPEG -y -i $PROFILE/%04d.png -strict -1 -pix_fmt yuv444p"$BIT"le $TEMP/input.y4m
-                $VVC/bin/EncoderAppStatic -fr 25 --InputChromaFormat=444 -i $TEMP/input.y4m -c $VVC/cfg/encoder_lowdelay_P_vtm.cfg -c $VVC/cfg/444/yuv444.cfg --InternalBitDepth=12 -q $CRF -f 100 -b $COMPRESSED_FILE
+                $VVC/bin/EncoderAppStatic -fr 25 --InputChromaFormat=444 -i $TEMP/input.y4m -c $VVC/cfg/encoder_lowdelay_P_vtm.cfg -c $VVC/cfg/444/yuv444.cfg --InternalBitDepth=12 -q $CRF -f $FRAMES_COUNT -b $COMPRESSED_FILE
                 $VVC/bin/DecoderAppStatic -b $COMPRESSED_FILE -o $TEMP/output.y4m
                 SIZE=$(stat --printf="%s" $COMPRESSED_FILE)
-                compareAll $TEMP/output.y4m $REF_FILE $PROJECT_NAME $PROFILE_NAME $BIT $CODEC $CRF $SIZE $RESULTS $CODEC_DIR $REFERENCE_NONE/$BIT.mp4    
+                losslessCompress $TEMP/output.y4m $TEMP/output.mp4 $BIT
+                compareAll $TEMP/output.mp4 $REF_FILE $PROJECT_NAME $PROFILE_NAME $BIT $CODEC $CRF $SIZE $RESULTS $CODEC_DIR $REFERENCE_NONE/$BIT.mp4    
             done
             
             CODEC=xvc
@@ -157,7 +164,8 @@ for PROJECT in $PROJECTS; do
                 $XVC/xvcenc -internal-bitdepth 12 -input-file $TEMP/input.y4m -qp $CRF -output-file $COMPRESSED_FILE 
                 $XVC/xvcdec -bitstream-file $COMPRESSED_FILE -output-file $TEMP/output.y4m 
                 SIZE=$(stat --printf="%s" $COMPRESSED_FILE)
-                compareAll $TEMP/output.y4m $REF_FILE $PROJECT_NAME $PROFILE_NAME $BIT $CODEC $CRF $SIZE $RESULTS $CODEC_DIR $REFERENCE_NONE/$BIT.mp4    
+                losslessCompress $TEMP/output.y4m $TEMP/output.mp4 $BIT
+                compareAll $TEMP/output.mp4 $REF_FILE $PROJECT_NAME $PROFILE_NAME $BIT $CODEC $CRF $SIZE $RESULTS $CODEC_DIR $REFERENCE_NONE/$BIT.mp4    
             done
        
         done
@@ -169,8 +177,9 @@ for PROJECT in $PROJECTS; do
             COMPRESSED_DIR=$CODEC_DIR/$PROFILE_NAME"_"$CRF
             mkdir -p $COMPRESSED_DIR
             $FFMPEG -y -i $PROFILE/%04d.png -c:v $CODEC -q:v $CRF -pix_fmt rgb48le $COMPRESSED_DIR/%04d.jxl
-            SIZE=$(du -bs $COMPRESSED_DIR | cut -d "     " -f1)
-            compareAll $COMPRESSED_DIR/%04d.jxl $REF_FILE $PROJECT_NAME $PROFILE_NAME $BIT $CODEC $CRF $SIZE $RESULTS $CODEC_DIR $REFERENCE_NONE/$BIT.mp4    
+            SIZE=$(du -bs $COMPRESSED_DIR | cut -f1)
+            losslessCompress $COMPRESSED_DIR/%04d.jxl $TEMP/output.mp4 $BIT
+            compareAll $TEMP/output.mp4 $REF_FILE $PROJECT_NAME $PROFILE_NAME $BIT $CODEC $CRF $SIZE $RESULTS $CODEC_DIR $REFERENCE_NONE/$BIT.mp4    
         done
 
         CODEC=libwebp
@@ -180,7 +189,7 @@ for PROJECT in $PROJECTS; do
         COMPRESSED_DIR=$CODEC_DIR/$PROFILE_NAME"_"$CRF
         mkdir -p $COMPRESSED_DIR
         $FFMPEG -y -i $PROFILE/%04d.png -c:v $CODEC -lossless 1 -q:v $CRF -pix_fmt bgra $COMPRESSED_DIR/%04d.webp
-        SIZE=$(du -bs $COMPRESSED_DIR | cut -d "     " -f1)
+        SIZE=$(du -bs $COMPRESSED_DIR | cut -f1)
         compareAll $COMPRESSED_DIR/%04d.webp $REF_FILE $PROJECT_NAME $PROFILE_NAME $BIT $CODEC $CRF $SIZE $RESULTS $CODEC_DIR $REFERENCE_NONE/$BIT.mp4    
 
     done
