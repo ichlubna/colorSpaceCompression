@@ -82,7 +82,9 @@ compareAll ()
     mkdir -p $INVERTED_DIR
     PROFILE_NAME=$(echo "$4" | tr '_' ' ')
     PROFILE_NAME=$(translateProfile $PROFILE_NAME)
-    $BLENDER -b --python convert.py -x 1 -- "$PROFILE_NAME" "$1" "$INVERTED_DIR" $FRAMES_COUNT
+    INPUT_FILE=$1
+    INPUT_FILE="${INPUT_FILE/"%04d"/"0001"}"
+    $BLENDER -b --python convert.py -x 1 -- "$PROFILE_NAME" "$INPUT_FILE" "$INVERTED_DIR" $FRAMES_COUNT
     compareAndStore $INVERTED_DIR/%04d.png ${11} $3 $4 $5 $6 $7 $8 $RESULTS_INVERSE
 }
 
@@ -167,8 +169,11 @@ for PROJECT in $PROJECTS; do
                 losslessCompress $TEMP/output.y4m $TEMP/output.mp4 $BIT
                 compareAll $TEMP/output.mp4 $REF_FILE $PROJECT_NAME $PROFILE_NAME $BIT $CODEC $CRF $SIZE $RESULTS $CODEC_DIR $REFERENCE_NONE/$BIT.mp4    
             done
-       
+ 
         done
+
+        BIT_DIR=$COMPRESSED_PROJECT/16
+        mkdir -p $BIT_DIR
 
         CODEC=libjxl
         CODEC_DIR=$BIT_DIR/$CODEC
@@ -178,8 +183,8 @@ for PROJECT in $PROJECTS; do
             mkdir -p $COMPRESSED_DIR
             $FFMPEG -y -i $PROFILE/%04d.png -c:v $CODEC -q:v $CRF -pix_fmt rgb48le $COMPRESSED_DIR/%04d.jxl
             SIZE=$(du -bs $COMPRESSED_DIR | cut -f1)
-            losslessCompress $COMPRESSED_DIR/%04d.jxl $TEMP/output.mp4 $BIT
-            compareAll $TEMP/output.mp4 $REF_FILE $PROJECT_NAME $PROFILE_NAME $BIT $CODEC $CRF $SIZE $RESULTS $CODEC_DIR $REFERENCE_NONE/$BIT.mp4    
+            $FFMPEG -y -i $COMPRESSED_DIR/%04d.jxl -pix_fmt rgb48be $TEMP/%04d.png
+            compareAll $TEMP/%04d.png $REF_FILE $PROJECT_NAME $PROFILE_NAME $BIT $CODEC $CRF $SIZE $RESULTS $CODEC_DIR $REFERENCE_NONE/$BIT.mp4    
         done
 
         CODEC=libwebp
@@ -190,7 +195,8 @@ for PROJECT in $PROJECTS; do
         mkdir -p $COMPRESSED_DIR
         $FFMPEG -y -i $PROFILE/%04d.png -c:v $CODEC -lossless 1 -q:v $CRF -pix_fmt bgra $COMPRESSED_DIR/%04d.webp
         SIZE=$(du -bs $COMPRESSED_DIR | cut -f1)
-        compareAll $COMPRESSED_DIR/%04d.webp $REF_FILE $PROJECT_NAME $PROFILE_NAME $BIT $CODEC $CRF $SIZE $RESULTS $CODEC_DIR $REFERENCE_NONE/$BIT.mp4    
+        $FFMPEG -y -i $COMPRESSED_DIR/%04d.webp -pix_fmt rgb48be $TEMP/%04d.png
+        compareAll $TEMP/%04d.png $REF_FILE $PROJECT_NAME $PROFILE_NAME $BIT $CODEC $CRF $SIZE $RESULTS $CODEC_DIR $REFERENCE_NONE/$BIT.mp4    
 
     done
 done
