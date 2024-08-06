@@ -80,11 +80,11 @@ compareAll ()
     compareAndStore $1 $2 $3 $4 $5 $6 $7 $8 $9 
     INVERTED_DIR=${10}/inverted_$7/
     mkdir -p $INVERTED_DIR
-    PROFILE_NAME=$(echo "$4" | tr '_' ' ')
-    PROFILE_NAME=$(translateProfile $PROFILE_NAME)
+    PROFILE_NAME_L=$(echo "$4" | tr '_' ' ')
+    PROFILE_NAME_L=$(translateProfile $PROFILE_NAME_L)
     INPUT_FILE=$1
     INPUT_FILE="${INPUT_FILE/"%04d"/"0001"}"
-    $BLENDER -b --python convert.py -x 1 -- "$PROFILE_NAME" "$INPUT_FILE" "$INVERTED_DIR" $FRAMES_COUNT
+    $BLENDER -b --python convert.py -x 1 -- "$PROFILE_NAME_L" "$INPUT_FILE" "$INVERTED_DIR" $FRAMES_COUNT
     compareAndStore $INVERTED_DIR/%04d.png ${11} $3 $4 $5 $6 $7 $8 $RESULTS_INVERSE
 }
 
