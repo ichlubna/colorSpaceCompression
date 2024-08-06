@@ -97,7 +97,7 @@ COMPRESSED=./compressed
 mkdir -p $COMPRESSED
 PROJECTS=($(ls -d renders/*))
 for PROJECT in $PROJECTS; do
-    PROFILES=($(ls -d $PROJECT/*))
+    PROFILES=$(ls -d $PROJECT/*)
     PROJECT_NAME=$(basename $PROJECT)
     COMPRESSED_PROJECT=$COMPRESSED/$PROJECT_NAME
     mkdir -p $COMPRESSED_PROJECT
