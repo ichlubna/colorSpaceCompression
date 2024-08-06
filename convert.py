@@ -21,7 +21,6 @@ for node in tree.nodes:
 sequenceLength = framesCount
 imageNode = tree.nodes.new(type='CompositorNodeImage')
 imageNode.location = 0,0
-#bpy.ops.image.open(filepath=imagesPath)
 bpy.data.images.load(imagesPath)
 image = bpy.data.images[os.path.basename(imagesPath)]
 imageNode.image = image
@@ -39,8 +38,8 @@ links = tree.links
 link = links.new(imageNode.outputs[0], compositeNode.inputs[0])
 
 bpy.context.scene.frame_end = sequenceLength
-bpy.context.scene.render.resolution_x = 3840
-bpy.context.scene.render.resolution_y = 2160
+bpy.context.scene.render.resolution_x = image.size[0]
+bpy.context.scene.render.resolution_y = image.size[1]
 bpy.context.scene.render.filepath = outputPath
 bpy.context.scene.render.image_settings.file_format = "PNG"
 bpy.context.scene.render.image_settings.color_depth = "16"
