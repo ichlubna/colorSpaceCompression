@@ -26,17 +26,17 @@ for INPUT_FILE in $INPUT_DIR/*.yuv; do
     $FFMPEG -f rawvideo -pix_fmt yuv420p10le -s:v 3840x2160 -r 120 -i $INPUT_FILE -vframes $FRAMES_COUNT -vf scale=-1:1080 -pix_fmt yuv420p10le -strict -1 $REFERENCE
 
     for PROFILE in "${PROFILES[@]}"; do
-        PROFILE_DIR=$TEMP/"$PROFILE"
-        CONVERTED=$PROFILE_DIR/converted
-        mkdir -p $PROFILE_DIR
-        mkdir -p $CONVERTED
+        PROFILE_DIR="$TEMP/$PROFILE"
+        CONVERTED="$PROFILE_DIR/converted"
+        mkdir -p "$PROFILE_DIR"
+        mkdir -p "$CONVERTED"
         $BLENDER -b --python uvgConvert.py -x 1 -- "$PROFILE" "$REFERENCE" "$CONVERTED/" 
         CONVERTED_FILE=$PROFILE_DIR/converted.y4m
         $FFMPEG -i "$CONVERTED/%04d.png" -pix_fmt yuv420p10le -strict -1 "$CONVERTED_FILE"
 
         for CRF in 1 10 19 28 37 46 55 63; do
-            COMPRESSED_FILE=$PROFILE_DIR/$CRF".266"
-            DECOMPRESSED_FILE=$PROFILE_DIR/$CRF"_dec.y4m"
+            COMPRESSED_FILE="$PROFILE_DIR"/$CRF".266"
+            DECOMPRESSED_FILE="$PROFILE_DIR"/$CRF"_dec.y4m"
 
             $VVENC -i "$CONVERTED_FILE" -c yuv420_10 --preset fast -q $CRF -o "$COMPRESSED_FILE"
             SIZE=$(stat --printf="%s" "$COMPRESSED_FILE")
