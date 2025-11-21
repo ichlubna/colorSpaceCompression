@@ -9,6 +9,7 @@ argv = argv[argv.index("--") + 1:]
 profile = argv[0]
 imagesPath = argv[1]
 outputPath = argv[2]
+inputProfile = argv[3]
 
 bpy.context.scene.use_nodes = True
 tree = bpy.context.scene.node_tree
@@ -21,15 +22,15 @@ imageNode = tree.nodes.new(type='CompositorNodeImage')
 bpy.data.images.load(imagesPath)
 image = bpy.data.images[os.path.basename(imagesPath)]
 imageNode.image = image
-imageNode.image.colorspace_settings.name = profile
-imageNode.image.source = "MOVIE"
+imageNode.image.colorspace_settings.name=inputProfile
+imageNode.image.source = "SEQUENCE"
 imageNode.frame_duration = 25
 
-compositeNode = tree.nodes.new('CompositorNodeComposite')   
+compositeNode = tree.nodes.new('CompositorNodeComposite')
 compositeNode.location = 1000,0
 
 convertNode = tree.nodes.new('CompositorNodeConvertColorSpace')
-convertNode.from_color_space='Rec.2020'
+convertNode.from_color_space=inputProfile
 convertNode.to_color_space=profile
 
 links = tree.links
