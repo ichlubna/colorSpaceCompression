@@ -3,18 +3,16 @@ set -x
 #set -e
 
 FFMPEG=ffmpeg
-# https://vcgit.hhi.fraunhofer.de/jvet/VVCSoftware_VTM
 VVENC=/run/media/ichlubna/Amaterasu/uvg/vvenc/bin/release-static/vvencapp
 VVDEC=/run/media/ichlubna/Amaterasu/uvg/vvdec/bin/release-static/vvdecapp
 BLENDER=/run/media/ichlubna/Amaterasu/uvg/blender-4.5.4-linux-x64/blender
 TEMP=$(mktemp -d)
 
-# Using dataset https://ultravideo.fi/dataset.html, all yuv files moved to one dir
 INPUT_DIR=$1
 RESULTS_DIR=$2
 FRAMES_COUNT=25
 HEADER="profile, crf, psnr, ssim, vmaf, size"
-PROFILES=('ACEScc' 'ARRI K1S1 sRGB') # 'AgX Base Kraken sRGB' 'AgX Base sRGB' 'AgX Log' 'Apple Log' 'BMDFilm WideGamut Gen5 Log' 'CanonLog2 CinemaGamut D55' 'CanonLog3 CinemaGamut D55' 'D-Log D-Gamut' 'DaVinci Intermidiate WideGamut Log' 'F-Log F-Gamut' 'F-Log2 F-Gamut' 'JzDT sRGB' 'Khronos Neutral sRGB' 'N-Log' 'Non-Color' 'OpenDRT Default sRGB' 'ProTune Log' 'RED IPP2 sRGB' 'S-Log2 S-Gamut' 'S-Log3 S-Gamut3' 'TCAMv2 sRGB' 'V-Log V-Gamut' 'sRGB' 'T-Log - E-Gamut')
+PROFILES=('ACEScc' 'ARRI K1S1 sRGB' 'AgX Base Kraken sRGB' 'AgX Base sRGB' 'AgX Log' 'Apple Log' 'BMDFilm WideGamut Gen5 Log' 'CanonLog2 CinemaGamut D55' 'CanonLog3 CinemaGamut D55' 'D-Log D-Gamut' 'DaVinci Intermidiate WideGamut Log' 'F-Log F-Gamut' 'F-Log2 F-Gamut' 'JzDT sRGB' 'Khronos Neutral sRGB' 'N-Log' 'Non-Color' 'OpenDRT Default sRGB' 'ProTune Log' 'RED IPP2 sRGB' 'S-Log2 S-Gamut' 'S-Log3 S-Gamut3' 'TCAMv2 sRGB' 'V-Log V-Gamut' 'sRGB' 'T-Log - E-Gamut')
 
 for INPUT_FILE in $INPUT_DIR/*; do
     if [[ "$INPUT_FILE" == *.yuv ]]; then
@@ -61,7 +59,7 @@ for INPUT_FILE in $INPUT_DIR/*; do
             COMPRESSED_FILE="$PROFILE_DIR"/$CRF".266"
             DECOMPRESSED_FILE="$PROFILE_DIR"/$CRF"_dec.y4m"
 
-            $VVENC -i "$CONVERTED_FILE" -c yuv420_10 --preset slow -q $CRF -o "$COMPRESSED_FILE"
+            $VVENC -i "$CONVERTED_FILE" -c yuv420_10 -q $CRF -o "$COMPRESSED_FILE"
             SIZE=$(stat --printf="%s" "$COMPRESSED_FILE")
             $VVDEC -b "$COMPRESSED_FILE" -o "$DECOMPRESSED_FILE"
             
