@@ -1,6 +1,6 @@
 #!/bin/bash
 set -x
-set -e
+#set -e
 
 FFMPEG=ffmpeg
 # https://vcgit.hhi.fraunhofer.de/jvet/VVCSoftware_VTM
@@ -27,24 +27,24 @@ for INPUT_FILE in $INPUT_DIR/*; do
         FILE_NAME=$(basename "$INPUT_FILE" .rar)
         REFERENCE_DIR=$TEMP/"$FILE_NAME""_reference"
         mkdir -p "$REFERENCE_DIR"
-        mkdir -p $TEMP/extract
-        unrar x "$INPUT_FILE" $TEMP/extract/
-        FIRST=$(ls -d $TEMP/extract/*/ | head -n 1)
+        mkdir -p ./extract
+        unrar x "$INPUT_FILE" ./extract/
+        FIRST=$(ls -d ./extract/*/ | head -n 1)
         i=1
         find "$FIRST" -maxdepth 1 -type f | sort | head -n 25 | while read -r file; do
             printf -v newname "%04d.exr" "$i"
             cp "$file" "$REFERENCE_DIR/$newname"
             ((i++))
         done
-        rm -rf $TEMP/extract
+        rm -rf ./extract
         INPUT_PROFILE="Rec.2100-PQ"
     else
         continue
     fi
 
     echo $INPUT_FILE
-    RESULTS=$RESULTS_DIR/$FILE_NAME.csv
-    echo $HEADER > $RESULTS
+    RESULTS="$RESULTS_DIR/$FILE_NAME.csv"
+    echo $HEADER > "$RESULTS"
     
     #$FFMPEG -f rawvideo -pix_fmt yuv420p10le -s:v 3840x2160 -r 120 -i $INPUT_FILE -vframes $FRAMES_COUNT -vf scale=-1:1080 -pix_fmt yuv444p16le -strict -1 $REFERENCE
 
@@ -71,7 +71,7 @@ for INPUT_FILE in $INPUT_DIR/*; do
             SSIM=$(echo "$RESULT" | grep -oP '(?<=All:).*?(?= )')
             RESULT=$($FFMPEG -i "$DECOMPRESSED_FILE" -i "$CONVERTED_FILE" -lavfi libvmaf -f null /dev/null 2>&1)
             VMAF=$(echo "$RESULT" | grep -oP '(?<=VMAF score: ).*')
-            echo "$PROFILE", $CRF, $PSNR, $SSIM, $VMAF, $SIZE >> $RESULTS 
+            echo "$PROFILE", $CRF, $PSNR, $SSIM, $VMAF, $SIZE >> "$RESULTS"
         done
         rm -rf "$PROFILE_DIR"
     done
