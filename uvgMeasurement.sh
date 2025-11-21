@@ -61,7 +61,7 @@ for INPUT_FILE in $INPUT_DIR/*; do
             COMPRESSED_FILE="$PROFILE_DIR"/$CRF".266"
             DECOMPRESSED_FILE="$PROFILE_DIR"/$CRF"_dec.y4m"
 
-            $VVENC -i "$CONVERTED_FILE" -c yuv420_10 --preset faster -q $CRF -o "$COMPRESSED_FILE"
+            $VVENC -i "$CONVERTED_FILE" -c yuv420_10 --preset slow -q $CRF -o "$COMPRESSED_FILE"
             SIZE=$(stat --printf="%s" "$COMPRESSED_FILE")
             $VVDEC -b "$COMPRESSED_FILE" -o "$DECOMPRESSED_FILE"
             
