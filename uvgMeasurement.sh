@@ -1,6 +1,6 @@
 #!/bin/bash
 set -x
-#set -e
+set -e
 
 FFMPEG=ffmpeg
 VVENC=/run/media/ichlubna/Amaterasu/uvg/vvenc/bin/release-static/vvencapp
@@ -31,7 +31,7 @@ for INPUT_FILE in $INPUT_DIR/*; do
         i=1
         find "$FIRST" -maxdepth 1 -type f | sort | head -n 25 | while read -r file; do
             printf -v newname "%04d.exr" "$i"
-            cp "$file" "$REFERENCE_DIR/$newname"
+            $FFMPEG -i "$file" -vf scale=-1:1080 "$REFERENCE_DIR/$newname"
             ((i++))
         done
         rm -rf ./extract
@@ -59,7 +59,7 @@ for INPUT_FILE in $INPUT_DIR/*; do
             COMPRESSED_FILE="$PROFILE_DIR"/$CRF".266"
             DECOMPRESSED_FILE="$PROFILE_DIR"/$CRF"_dec.y4m"
 
-            $VVENC -i "$CONVERTED_FILE" -c yuv420_10 -q $CRF -o "$COMPRESSED_FILE"
+            $VVENC -i "$CONVERTED_FILE" -c yuv420_10 --preset slow -q $CRF -o "$COMPRESSED_FILE"
             SIZE=$(stat --printf="%s" "$COMPRESSED_FILE")
             $VVDEC -b "$COMPRESSED_FILE" -o "$DECOMPRESSED_FILE"
             
