@@ -54,7 +54,7 @@ for INPUT_FILE in $INPUT_DIR/*; do
         CONVERTED="$PROFILE_DIR/converted"
         mkdir -p "$PROFILE_DIR"
         mkdir -p "$CONVERTED"
-        $BLENDER -b --python uvgConvert.py -x 1 -- "$PROFILE" "$REFERENCE_DIR"/"0001.exr" "$CONVERTED/" "$INPUT_PROFILE" 
+        $BLENDER -b --python extraConvert.py -x 1 -- "$PROFILE" "$REFERENCE_DIR"/"0001.exr" "$CONVERTED/" "$INPUT_PROFILE" 
         CONVERTED_FILE=$PROFILE_DIR/converted.y4m
         $FFMPEG -i "$CONVERTED/%04d.png" -pix_fmt yuv420p10le -strict -1 "$CONVERTED_FILE"
 
