@@ -22,7 +22,7 @@ imageNode = tree.nodes.new(type='CompositorNodeImage')
 bpy.data.images.load(imagesPath)
 image = bpy.data.images[os.path.basename(imagesPath)]
 imageNode.image = image
-imageNode.image.colorspace_settings.name="Non-Color"
+imageNode.image.colorspace_settings.name=inputProfile
 imageNode.image.source = "SEQUENCE"
 imageNode.frame_duration = 25
 
@@ -30,7 +30,7 @@ compositeNode = tree.nodes.new('CompositorNodeComposite')
 compositeNode.location = 1000,0
 
 convertNode = tree.nodes.new('CompositorNodeConvertColorSpace')
-convertNode.from_color_space=inputProfile
+convertNode.from_color_space="Linear Rec.709"
 convertNode.to_color_space=profile
 
 links = tree.links
