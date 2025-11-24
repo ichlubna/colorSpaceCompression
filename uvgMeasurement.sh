@@ -36,6 +36,9 @@ for INPUT_FILE in $INPUT_DIR/*; do
         done
         rm -rf ./extract
         INPUT_PROFILE="Rec.2100-PQ"
+        if [[ $FILE_NAME == *"Custom"* ]]; then
+            INPUT_PROFILE="Linear Rec.709"
+        fi
     else
         continue
     fi
@@ -59,7 +62,7 @@ for INPUT_FILE in $INPUT_DIR/*; do
             COMPRESSED_FILE="$PROFILE_DIR"/$CRF".266"
             DECOMPRESSED_FILE="$PROFILE_DIR"/$CRF"_dec.y4m"
 
-            $VVENC -i "$CONVERTED_FILE" -c yuv420_10 --preset slow -q $CRF -o "$COMPRESSED_FILE"
+            $VVENC -i "$CONVERTED_FILE" -c yuv420_10 -q $CRF -o "$COMPRESSED_FILE"
             SIZE=$(stat --printf="%s" "$COMPRESSED_FILE")
             $VVDEC -b "$COMPRESSED_FILE" -o "$DECOMPRESSED_FILE"
             
