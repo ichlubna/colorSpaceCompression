@@ -22,7 +22,7 @@ imageNode = tree.nodes.new(type='CompositorNodeImage')
 bpy.data.images.load(imagesPath)
 image = bpy.data.images[os.path.basename(imagesPath)]
 imageNode.image = image
-imageNode.image.colorspace_settings.name=inputProfile
+imageNode.image.colorspace_settings.name="Non-Color"
 imageNode.image.source = "SEQUENCE"
 imageNode.frame_duration = 25
 
